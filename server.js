@@ -25,20 +25,12 @@ const mongoURI = process.env.MONGO_URI;
 const db = monk(mongoURI || dbUrl)
 
 const contacts = db.get('contacts');
+const properties = db.get('properties');
 
 
 mongodb.MongoClient.connect(dbUrl, function(err, db) {
 
-    // var contacts = db.get('contacts');
-
-    // GET REQUEST - Contacts (WORKING?)
-    // app.get('/api/contacts', (req, res, next) => {
-    //     db.collection('contacts').find({}).toArray((err, contacts) => {
-    //         res.json({contacts});
-    //     });
-    // });
-
-    // GET REQUEST - Contacts
+    // (READ) GET REQUEST - Contacts
     app.get('/api/contacts', (req, res, next) => {
         contacts.find({})
         .then(function(contacts){
@@ -50,9 +42,21 @@ mongodb.MongoClient.connect(dbUrl, function(err, db) {
     });
 
 
+    // (READ) GET REQUEST - Properties
+    app.get('/api/properties', (req, res, next) => {
+        properties.find({})
+        .then(function(properties){
+            res.json(properties);
+        })
+        .catch(function(err){
+            res.json(err)
+        })
+    });
 
 
-    // POST REQUEST - Contacts
+
+
+    // (CREATE) POST REQUEST - Contacts
     app.post('/api/contacts', (req, res, next) => {
         contacts.insert(req.body).then(function(contact) {
             res.json(req.body)
@@ -60,6 +64,79 @@ mongodb.MongoClient.connect(dbUrl, function(err, db) {
             res.json(err)
         })
     });
+
+    // (UPDATE) PUT REQUEST - Contacts
+    app.put('/api/contacts/:_id', function(req, res, next){
+        var id = req.params._id;
+
+         contacts.findOneAndUpdate(
+             {_id: id}, req.body)
+         .then(function(contact){
+             res.json({status: 'contact updated'})
+         })
+         .catch(function(err){
+             res.json(err)
+         })
+
+    });
+
+
+
+
+
+
+
+
+
+
+    //
+    // app.put('/api/games/:_id', (req, res) => {
+    //     const { errors, isValid } = validate(req.body);
+    //
+    //     if (isValid){
+    //         const { title, cover} = req.body;
+    //         db.collection('games').findOneAndUpdate(
+    //             { _id: new mongodb.ObjectId(req.params._id) },
+    //             { $set: { title, cover } },
+    //             { returnOriginal: false },
+    //             (err, result) => {
+    //                 if (err) {res.status(500).json({ errors: {global: err}}); return; }
+    //                 res.json({game: result.value})
+    //             }
+    //         )
+    //     } else {
+    //         res.status(400).json({errors});
+    //     }
+    // })
+
+
+
+    // (DELETE) DELETE REQUEST - Contacts
+    app.delete('/api/contacts/:id', (req,res, next) =>{
+        var id = req.params.id;
+
+        contacts.findOneAndDelete({_id: id})
+        .then(function(){
+            res.json({status: 'user deleted'})
+        }).catch(function(err){
+            res.json(err)
+        })
+    })
+
+
+
+
+
+    // var contacts = db.get('contacts');
+
+    // GET REQUEST - Contacts (WORKING?)
+    // app.get('/api/contacts', (req, res, next) => {
+    //     db.collection('contacts').find({}).toArray((err, contacts) => {
+    //         res.json({contacts});
+    //     });
+    // });
+
+
 
     // // POST REQUEST - Contacts
     //    app.post('/api/contacts', (req, res, next) => {
@@ -69,16 +146,16 @@ mongodb.MongoClient.connect(dbUrl, function(err, db) {
     //         });
 
     //GET REQUEST - Properties
-    app.get('/api/properties', (req, res, next) => {
-        db.collection('properties').find({}).toArray((err, contacts) => {
-            res.json({contacts});
-        });
-    });
+    // app.get('/api/properties', (req, res, next) => {
+    //     db.collection('properties').find({}).toArray((err, contacts) => {
+    //         res.json({contacts});
+    //     });
+    // });
 
     // Retrieves simply 8080
-    app.get('/', function(req, res, next) {
-        res.json({'key': 'value'})
-    })
+    // app.get('/', function(req, res, next) {
+    //     res.json({'key': 'value'})
+    // })
 
     app.use((req, res, next) => {
         res.status(404).json({
